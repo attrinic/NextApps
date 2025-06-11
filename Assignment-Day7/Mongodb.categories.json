@@ -1,0 +1,38 @@
+[{
+  "_id": {
+    "$oid": "684848f1b10d383992abb23c"
+  },
+  "categoryId": 1,
+  "categoryName": "Electronics"
+},
+{
+  "_id": {
+    "$oid": "684848f1b10d383992abb23d"
+  },
+  "categoryId": 2,
+  "categoryName": "Fashion"
+},
+{
+  "_id": {
+    "$oid": "684848f1b10d383992abb23e"
+  },
+  "categoryId": 3,
+  "categoryName": "Sports"
+},
+{
+  "_id": {
+    "$oid": "684848f1b10d383992abb23f"
+  },
+  "categoryId": 4,
+  "categoryName": "Men"
+},
+{
+  "_id": {
+    "$oid": "684848f1b10d383992abb240"
+  },
+  "categoryId": 5,
+  "categoryName": "Women n",
+  "updatedAt": {
+    "$date": "2025-06-10T17:40:07.092Z"
+  }
+}]
