@@ -7,28 +7,38 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_TOKEN;
 const salt = 10;
 
-// To add new user in Mongodb
-router.post('/login', async (req, res) => {
+/**
+ * Get user profile details
+ */
+router.get('/me', (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { email, password } = req.body;
+  try {
+    const data = jwt.verify(token, JWT_SECRET);
+    res.json({ user: data });
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+});
+
+// user login
+router.post('/login', async (req, res) => {
+    const { email, password, userType } = req.body;
     
-    const response = await verifyUserLogin(email, password);
+    const response = await verifyUserLogin(email, password, userType);
     //return res.json(response);
     if (response.status === 'ok') {
         // Store JWT token as a cookie in browser
         const token = response.data; 
-        //res.cookie('token', token, { maxAge: 1 * 60 * 60 * 1000, httpOnly: true }) // store in cookie for 1 hour
-        //res.redirect('/'); // redirecting to main page
-        res.cookie('token', 'testtok', {
-            maxAge: 900000, // Cookie expiration time in milliseconds (15 minutes)
+        res.cookie('token', token, {
+            maxAge: 1 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (1 Hour)
             httpOnly: true, // Cookie cannot be accessed by client-side JavaScript
-            sameSite: 'strict'
-        });
-        
-        return res.json(response);
-    } else {
-        return res.json(response);
+            sameSite: 'Lax'
+        });  
     }
+
+    return res.json(response);
 });
 
 /**
@@ -37,18 +47,24 @@ router.post('/login', async (req, res) => {
  * @param {*} password 
  * @returns 
  */
-const verifyUserLogin = async (email, password) => {
+const verifyUserLogin = async (email, password, userType) => {
     try {
-        const user = await User.findOne({ email });
+        // 1=> Admin Token, 0=> User Token
+        let tokeType = 'customer'; 
+        if (userType == '1') {
+            tokeType = 'admin'
+        }
+        const user = await User.findOne({ email, userType: tokeType });
         if (!user) {
             return { status: 'error', error: 'user not found' }
         }
         if (await bcrypt.compare(password, user.password)) {
-            token = jwt.sign({ id: user._id, username: user.email, type: 'user' }, JWT_SECRET); // jwt token
-            return { status: 'ok', data: token };
+            
+            token = jwt.sign({ id: user._id, username: user.email, type: tokeType }, JWT_SECRET); // jwt token
+            return { status: 'ok', data: token, type: tokeType };
         }
 
-        return { status: 'error', error: 'invalid password, Please try again.'}
+        return { status: 'error', error: 'Invalid password, Please try again.'}
     } catch (error) {
         console.log(error);
         return { status: 'error', error: 'Connection timed out' }
@@ -56,7 +72,7 @@ const verifyUserLogin = async (email, password) => {
 }
 
 /**
- * Validate token
+ * Validate token and type
  * @param {*} token 
  * @returns 
  */
@@ -92,7 +108,13 @@ router.post('/register', async (req, res) => {
 
 // To get all Users
 router.get('/', (req, res) => {
-
+    const { token } = req.cookies; // getting token from cookies
+    // console.log("Token received from cookies:", token);
+    // if (verifyToken(token)) { // if token is there
+    //     console.log("Token verified");
+    // } else {
+    //     console.log("Token not verified");
+    // }
     User.find().then((users) => {
         if (users.length !== 0) {
             res.json(users);
@@ -139,9 +161,17 @@ router.put('/:id', async (req, res) => {
         }
 
         res.json({ message: 'User updated Successfully', data: updatedProduct });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({ message: 'Error Updating User', error: error.message });
+    }
+});
+
+router.post('/logout', (req, res) => {
+    try {
+        res.clearCookie('token');
+        res.status(200).json({ message: 'You have logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error in User logout ', error: error.message });
     }
 });
 

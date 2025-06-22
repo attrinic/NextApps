@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 const AddProduct = ({ onAdd }) => {
+    const nextApiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [product, setProduct] = useState({
         "productName": '',
         "productCode": '',
@@ -40,7 +41,7 @@ const AddProduct = ({ onAdd }) => {
             // onAdd(name); // calling onAdd props
             // debugger;
             console.log(newProduct);
-            fetch('http://localhost:4200/product', {
+            fetch(`${nextApiUrl}/product`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -3,14 +3,13 @@
 import { useState } from "react";
 
 const AddCategory = () => {
+    const nextApiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [category, setCategory] = useState({
         "categoryName": ''
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // console.log("name", name);
-        // console.log("value", value);
         setCategory((prev) => ({
             ...prev,
             [name]: value
@@ -24,8 +23,7 @@ const AddCategory = () => {
             const newCategory = {
                 'categoryName': catName
             }
-            console.log("NewCat::", newCategory);
-            fetch('http://localhost:4200/category', {
+            fetch(`${nextApiUrl}/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
